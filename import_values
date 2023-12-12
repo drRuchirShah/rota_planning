@@ -1,0 +1,17 @@
+# Import csv of work schedule + docs
+
+#setwd("C:/Ruchir Documents/Coding/shift optimiser/Total attempt")
+data <- read.csv("C:/Ruchir Documents/Coding/shift optimiser/Total attempt/test2.csv")
+
+#extract work schedule
+work_schedule <- as.vector(data[2])
+
+#extract doctor preference
+# first find out how many columns in spreadsheet from which to calculate number of doctors
+no_docs <- ncol(data) -2
+
+# extract all columns from 3 onwards as doctors preferences
+doc_list <- lapply(data[, 3:ncol(data)], as.vector)
+
+# bind into matrix
+doc_matrix <- do.call(rbind, doc_list)
