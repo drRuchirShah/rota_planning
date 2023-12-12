@@ -1,0 +1,30 @@
+# create csv file to be populated by user:
+
+# Function to create a CSV file
+createCSV <- function(start_date, end_date, num_doctors) {
+  
+  # Generate a sequence of dates from start to end
+  date_sequence <- seq(as.Date(start_date), as.Date(end_date), by = "1 day")
+  
+  # Create a data frame with the date sequence and an empty "Work_Schedule" column
+  data <- data.frame(Date = date_sequence, Work_Schedule = rep(NA, length(date_sequence)))
+  
+  # Add additional columns labeled as "Doctor 1", "Doctor 2", etc.
+  for (i in 1:num_doctors) {
+    col_name <- paste0("Doctor", i)
+    data[, col_name] <- NA
+  }
+  
+  # Write the data frame to a CSV file
+  write.csv(data, "fill_out.csv", row.names = FALSE)
+  
+}
+
+# Example usage:
+start_date <- "2023-01-01" #year-month-date
+end_date <- "2023-01-10"
+num_doctors <- 5 # number of doctors on rota
+
+# Call the function with the provided inputs
+createCSV(start_date, end_date, num_doctors)
+
