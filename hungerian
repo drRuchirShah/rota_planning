@@ -1,0 +1,104 @@
+#Aim: assign doctors to appropriate rota line, that will minimise leave preference clashing with oncalls
+
+
+#to do
+# 1. initialise parameters at start
+# 2. accept excel csv file as input
+# 3 accept doc rota refernce as csv
+
+#STEP 1: create all rota lines from work schedule
+
+# Check if the number of elements is divisible by 7
+if (length(work_schedule) %% 7 == 0) {
+  print("The number of elements is divisible by 7.")
+  
+  # Calculate the number of vectors to create, ie rota lines
+  num_vectors <- length(work_schedule) %/% 7
+  
+  # Create a list to store the vectors
+  vector_list <- list()
+  
+  # Loop to create new vectors
+  for (i in 1:num_vectors) {
+    # Take the last 7 elements and append them to the start
+    new_vector <- c(tail(work_schedule, 7), head(work_schedule, -7))
+    
+    # Add the new vector to the list
+    vector_list[[i]] <- new_vector
+    
+    # Update your_vector for the next iteration
+    your_vector <- new_vector
+  }
+  
+  # Print the resulting vectors
+  for (i in 1:num_vectors) {
+    cat("Vector", i, ":", vector_list[[i]], "\n")
+  }
+
+} else {
+  print("The number of elements is not divisible by 7. Re-enter work schedule")
+}
+
+
+#Bind vectors (ie different rota lines) into a matrix
+result_matrix <- do.call(rbind, vector_list)
+print("Resulting Matrix:")
+print(result_matrix)
+
+
+# STEP 2: Calculate clash for each doctor for each rota line
+# calclate clash for each doctor for each rota line
+# this example first creates 3 random docs availability
+# for doc 0 = unavialble, 1 = avialable
+
+set.seed(42)
+doc_A <- sample(0:1, 21, replace = TRUE)
+doc_B <- sample(0:1, 21, replace = TRUE)
+doc_C <- sample(0:1, 21, replace = TRUE)
+
+#bind matrix
+people_matrix <- rbind(doc_A, doc_B, doc_C)
+rota_lines_matrix <- result_matrix # assigns rota line matrix created way above in first loop
+
+#or
+#assign prior doc_matrix
+
+people_matrix <- doc_matrix 
+
+# Initialize the result matrix
+clash_matrix <- matrix(0, nrow = 3, ncol = 3) # nrow and cols has been hard coded
+
+# Calculate the sums of element-wise differences
+for (i in 1:3) { #again hard coded in 3
+  for (j in 1:3) {
+    # Element-wise subtraction, ensure values are in [0, 1]
+    diff_vector <- pmax(0, pmin(1, rota_lines_matrix[i,] - people_matrix[j,]))
+    
+    # Sum of the resulting vector
+    clash_matrix[j, i] <- sum(diff_vector)
+  }
+}
+print(clash_matrix) # row = docs, cols = rota line
+
+
+
+
+
+#libray install hungerian
+install.packages("RcppHungarian")
+library(RcppHungarian)
+
+HungarianSolver(clash_matrix)
+
+# https://cran.r-project.org/web/packages/RcppHungarian/vignettes/Introduction-to-RcppHungarian.html
+#pairs soloution to assign
+#cost is total clash across rota
+# for row = doc
+# col = rota line
+
+
+# subtraction relies on rota- line - doc availiabilty
+# doc 0 = unavialble, 1= avialable
+# rota line 0 = normal day, 1 = oncall
+# once minus ,  ignore negative values
+
